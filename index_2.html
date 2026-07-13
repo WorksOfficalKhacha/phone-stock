@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สต๊อกมือถือ — ระบบจัดการสต๊อก</title>
+<!-- ใช้ฟอนต์ Cordia New (ฟอนต์ระบบ) เป็นฟอนต์หลักของเว็บ ไม่ต้องโหลดจากภายนอก -->
+<style>
+  :root{
+    --bg:#F5F6F1;
+    --surface:#FFFFFF;
+    --border:#E1E2D8;
+    --ink:#1B231F;
+    --ink-soft:#5C665F;
+    --ink-faint:#8A9189;
+    --brand:#123F38;
+    --brand-2:#1E5C4E;
+    --brand-tint:#E7EFEA;
+    --new:#2E7D5B;
+    --new-bg:#E5F2EA;
+    --used:#A9761E;
+    --used-bg:#FBF0DA;
+    --sold:#8A8F87;
+    --sold-bg:#EEEFE9;
+    --danger:#AE4632;
+    --danger-bg:#F7E9E5;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(18,32,26,.04), 0 8px 24px -12px rgba(18,32,26,.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Cordia New','Angsana New','TH Sarabun New',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .mono{font-family:'Cordia New','Angsana New',monospace;}
+  .serif{font-family:'Cordia New',serif;}
+
+  /* ---------- Header ---------- */
+  header.topbar{
+    background:var(--brand);
+    color:#F3F5F1;
+    padding:22px 28px;
+    position:sticky; top:0; z-index:30;
+    box-shadow:0 4px 18px -8px rgba(0,0,0,.35);
+  }
+  .topbar-inner{
+    max-width:1200px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .brand-title{display:flex; align-items:center; gap:12px;}
+  .brand-mark{
+    width:38px;height:38px;border-radius:9px;
+    background:linear-gradient(155deg,#2E7D5B,#1E5C4E 60%,#123F38);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Cordia New',serif; font-weight:700; color:#fff; font-size:17px;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);
+  }
+  .brand-title h1{
+    font-family:'Cordia New',serif; font-weight:600; font-size:20px; margin:0; letter-spacing:.2px;
+  }
+  .brand-title p{margin:1px 0 0; font-size:12.5px; color:#B9CBC2;}
+  .topbar-actions{display:flex; gap:8px;}
+  button{font-family:inherit; cursor:pointer;}
+  .btn{
+    border:none; border-radius:10px; padding:10px 16px; font-size:14px; font-weight:600;
+    display:inline-flex; align-items:center; gap:6px; transition:transform .12s ease, background .15s ease, box-shadow .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:#E9C46A; color:#2A2100; box-shadow:var(--shadow);}
+  .btn-primary:hover{background:#F0CE7C;}
+  .btn-ghost{background:rgba(255,255,255,.08); color:#F3F5F1; border:1px solid rgba(255,255,255,.18);}
+  .btn-ghost:hover{background:rgba(255,255,255,.16);}
+  .btn-outline{background:var(--surface); color:var(--ink); border:1px solid var(--border);}
+  .btn-outline:hover{border-color:var(--brand-2); color:var(--brand-2);}
+  .btn-danger{background:var(--danger-bg); color:var(--danger);}
+  .btn-danger:hover{background:#f2d9d1;}
+  .btn-sm{padding:6px 10px; font-size:12.5px; border-radius:8px;}
+
+  /* ---------- Layout ---------- */
+  main{max-width:1200px; margin:0 auto; padding:24px 28px 64px;}
+
+  .stat-strip{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px;
+  }
+  .stat-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px 18px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+  }
+  .stat-card::before{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--tag,var(--brand-2));
+  }
+  .stat-card .label{font-size:12px; color:var(--ink-soft); font-weight:600; letter-spacing:.2px;}
+  .stat-card .value{font-family:'Cordia New',serif; font-size:26px; font-weight:600; margin-top:4px;}
+  .stat-card .sub{font-size:11.5px; color:var(--ink-faint); margin-top:2px;}
+
+  .toolbar{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px;
+  }
+  .tabs{display:flex; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:11px; padding:4px;}
+  .tab{
+    border:none; background:transparent; padding:8px 14px; border-radius:8px; font-size:13.5px; font-weight:600; color:var(--ink-soft);
+  }
+  .tab.active{background:var(--brand); color:#fff;}
+  .search-wrap{position:relative; flex:1; min-width:220px; max-width:340px;}
+  .search-wrap input{
+    width:100%; padding:10px 12px 10px 34px; border-radius:10px; border:1px solid var(--border);
+    background:var(--surface); font-size:13.5px; color:var(--ink); font-family:inherit;
+  }
+  .search-wrap input:focus{outline:2px solid var(--brand-2); outline-offset:1px;}
+  .search-wrap svg{position:absolute; left:11px; top:50%; transform:translateY(-50%); opacity:.5;}
+
+  /* ---------- Table ---------- */
+  .table-wrap{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+  }
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  thead th{
+    text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--ink-soft);
+    padding:12px 14px; border-bottom:1px solid var(--border); background:#FAFAF6; white-space:nowrap;
+  }
+  tbody td{padding:12px 14px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#FAFBF8;}
+  tbody tr.sold{opacity:.6;}
+
+  .tag-chip{
+    position:relative; display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 8px;
+    border-radius:0 8px 8px 0; font-size:12px; font-weight:700; font-family:'Cordia New',monospace;
+  }
+  .tag-chip::before{
+    content:""; width:7px; height:7px; border-radius:50%; background:currentColor; box-shadow:0 0 0 2px var(--surface);
+  }
+  .tag-new{background:var(--new-bg); color:var(--new);}
+  .tag-used{background:var(--used-bg); color:var(--used);}
+
+  .badge{display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:700;}
+  .badge-stock{background:var(--new-bg); color:var(--new);}
+  .badge-sold{background:var(--sold-bg); color:var(--sold);}
+
+  .id-tag{
+    font-family:'Cordia New',monospace; font-size:12px; color:var(--ink-soft);
+    background:#F1F2EB; border:1px dashed var(--border); border-radius:6px; padding:2px 7px;
+  }
+  .model-cell strong{display:block; font-size:13.5px;}
+  .model-cell span{display:block; font-size:11.5px; color:var(--ink-faint); margin-top:1px;}
+  .price{font-family:'Cordia New',monospace; font-weight:600;}
+  .row-actions{display:flex; gap:6px; justify-content:flex-end;}
+  .icon-btn{
+    width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:var(--surface);
+    display:inline-flex; align-items:center; justify-content:center; color:var(--ink-soft);
+  }
+  .icon-btn:hover{border-color:var(--brand-2); color:var(--brand-2);}
+
+  .empty-state{padding:64px 24px; text-align:center; color:var(--ink-soft);}
+  .empty-state .glyph{font-size:34px; margin-bottom:10px;}
+  .empty-state h3{font-family:'Cordia New',serif; margin:0 0 6px; color:var(--ink);}
+  .empty-state p{margin:0 0 16px; font-size:13.5px;}
+
+  /* ---------- Mobile cards ---------- */
+  .card-list{display:none; flex-direction:column; gap:10px;}
+  .stock-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow);
+    border-left:4px solid var(--new);
+  }
+  .stock-card.used{border-left-color:var(--used);}
+  .stock-card.sold{opacity:.65;}
+  .stock-card .row1{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .stock-card h4{margin:0; font-size:15px; font-family:'Cordia New',serif;}
+  .stock-card .meta{font-size:12px; color:var(--ink-soft); margin-top:3px;}
+  .stock-card .grid2{display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:10px; font-size:12.5px;}
+  .stock-card .grid2 div span{display:block; color:var(--ink-faint); font-size:10.5px;}
+  .stock-card .actions{display:flex; gap:8px; margin-top:12px;}
+
+  @media (max-width: 880px){
+    .stat-strip{grid-template-columns:repeat(2,1fr);}
+    main{padding:18px 14px 48px;}
+    .table-wrap{display:none;}
+    .card-list{display:flex;}
+    .toolbar{flex-direction:column; align-items:stretch;}
+    .tabs{overflow-x:auto;}
+  }
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(18,26,22,.45); backdrop-filter:blur(2px);
+    display:flex; align-items:center; justify-content:center; padding:18px; z-index:50; opacity:0; pointer-events:none; transition:opacity .16s ease;
+  }
+  .overlay.open{opacity:1; pointer-events:auto;}
+  .modal{
+    background:var(--surface); border-radius:16px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto;
+    box-shadow:0 24px 60px -20px rgba(0,0,0,.4); transform:translateY(8px); transition:transform .16s ease;
+  }
+  .overlay.open .modal{transform:translateY(0);}
+  .modal-header{
+    padding:18px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; background:var(--surface); z-index:2;
+  }
+  .modal-header h2{font-family:'Cordia New',serif; font-size:18px; margin:0;}
+  .modal-close{background:none;border:none;font-size:20px;color:var(--ink-soft); line-height:1; padding:4px;}
+  .modal-body{padding:20px 22px;}
+  .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .form-grid .full{grid-column:1 / -1;}
+  .field label{display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:5px;}
+  .field input, .field select, .field textarea{
+    width:100%; padding:9px 11px; border-radius:9px; border:1px solid var(--border); font-size:13.5px;
+    font-family:inherit; color:var(--ink); background:#FCFCFA;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--brand-2); outline-offset:1px; background:#fff;}
+  .toggle-group{display:flex; gap:8px;}
+  .toggle-opt{
+    flex:1; text-align:center; padding:10px; border-radius:9px; border:1.5px solid var(--border); font-weight:700; font-size:13px; color:var(--ink-soft);
+  }
+  .toggle-opt.sel-new{border-color:var(--new); background:var(--new-bg); color:var(--new);}
+  .toggle-opt.sel-used{border-color:var(--used); background:var(--used-bg); color:var(--used);}
+  .modal-footer{
+    padding:16px 22px 22px; display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--border); margin-top:6px;
+  }
+
+  .settings-body p{font-size:13px; color:var(--ink-soft); line-height:1.6;}
+  .settings-body code{background:#F1F2EB; padding:1px 6px; border-radius:5px; font-size:12px;}
+
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0;
+    background:var(--brand); color:#fff; padding:11px 18px; border-radius:10px; font-size:13.5px; font-weight:600;
+    box-shadow:0 10px 30px -8px rgba(0,0,0,.4); transition:all .2s ease; z-index:80; pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .toast.error{background:var(--danger);}
+
+  .spinner{
+    width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;
+    animation:spin .7s linear infinite; display:inline-block;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-row td{text-align:center; padding:40px; color:var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-title">
+      <div class="brand-mark">ค</div>
+      <div>
+        <h1>คลังมือถือ</h1>
+        <p>ระบบลงสต๊อกมือ 1 / มือ 2</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" id="btnRefresh">⟳ รีเฟรช</button>
+      <button class="btn btn-primary" id="btnAdd">+ ลงสต๊อกใหม่</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="stat-strip">
+    <div class="stat-card" style="--tag:var(--brand-2)">
+      <div class="label">คงเหลือทั้งหมด</div>
+      <div class="value" id="statTotal">0</div>
+      <div class="sub">เครื่อง</div>
+    </div>
+    <div class="stat-card" style="--tag:var(--new)">
+      <div class="label">มือ 1 คงเหลือ</div>
+      <div class="value" id="statNew">0</div>
+      <div class="sub">เครื่อง</div>
+    </div>
+    <div class="stat-card" style="--tag:var(--used)">
+      <div class="label">มือ 2 คงเหลือ</div>
+      <div class="value" id="statUsed">0</div>
+      <div class="sub">เครื่อง</div>
+    </div>
+    <div class="stat-card" style="--tag:var(--brand)">
+      <div class="label">มูลค่าทุนคงเหลือ</div>
+      <div class="value" id="statValue">฿0</div>
+      <div class="sub" id="statSoldSub">ขายแล้ว 0 เครื่อง</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-filter="stock">คงเหลือ</button>
+      <button class="tab" data-filter="new">มือ 1</button>
+      <button class="tab" data-filter="used">มือ 2</button>
+      <button class="tab" data-filter="sold">ขายแล้ว</button>
+      <button class="tab" data-filter="all">ทั้งหมด</button>
+    </div>
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="ค้นหา ยี่ห้อ / รุ่น / IMEI / สี">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>สถานะ</th>
+          <th>รุ่น</th>
+          <th>ความจุ / สี</th>
+          <th>แบต</th>
+          <th>IMEI/SN</th>
+          <th>ทุน</th>
+          <th>ราคาส่ง</th>
+          <th>ราคาขาย</th>
+          <th>วันที่ลง</th>
+          <th style="text-align:right">จัดการ</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr class="loading-row"><td colspan="10"><span class="spinner"></span> กำลังโหลดข้อมูล…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-list" id="cardList"></div>
+</main>
+
+<!-- Add/Edit Modal -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="formTitle">ลงสต๊อกใหม่</h2>
+      <button class="modal-close" id="formClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="stockForm">
+        <div class="form-grid">
+          <div class="field full">
+            <label>การใช้งาน</label>
+            <div class="toggle-group">
+              <div class="toggle-opt" data-val="มือ 1" id="optNew">มือ 1 (เครื่องใหม่)</div>
+              <div class="toggle-opt" data-val="มือ 2" id="optUsed">มือ 2 (มือสอง)</div>
+            </div>
+            <input type="hidden" id="f_usage" required>
+          </div>
+          <div class="field"><label>วันที่ลงสต๊อก</label><input type="date" id="f_date_in" required></div>
+          <div class="field"><label>ID (เว้นว่างให้สร้างอัตโนมัติ)</label><input type="text" id="f_id" placeholder="PH1720000000"></div>
+          <div class="field"><label>ยี่ห้อ</label><input type="text" id="f_brand" list="brandList" placeholder="Apple, Samsung..." required></div>
+          <datalist id="brandList"><option value="Apple"><option value="Samsung"><option value="Xiaomi"><option value="OPPO"><option value="vivo"></datalist>
+          <div class="field"><label>รุ่น</label><input type="text" id="f_model" placeholder="iPhone 14 Pro" required></div>
+          <div class="field"><label>ความจุ</label><input type="text" id="f_storage" placeholder="128GB"></div>
+          <div class="field"><label>สี</label><input type="text" id="f_color" placeholder="สีดำ"></div>
+          <div class="field"><label>แบตเตอรี่ (%)</label><input type="text" id="f_battery" placeholder="88%"></div>
+          <div class="field"><label>IMEI / SN</label><input type="text" id="f_imei"></div>
+          <div class="field"><label>ทุน (บาท)</label><input type="number" id="f_cost" min="0"></div>
+          <div class="field"><label>ราคาส่ง (บาท)</label><input type="number" id="f_wholesale" min="0"></div>
+          <div class="field"><label>ราคาขาย (บาท)</label><input type="number" id="f_price" min="0"></div>
+          <div class="field"><label>วันที่ขาย (ถ้ายังไม่ขายเว้นว่าง)</label><input type="date" id="f_date_out"></div>
+          <div class="field full"><label>หมายเหตุ</label><textarea id="f_note" rows="2" placeholder="รอยตำหนิ, อุปกรณ์ที่แถม ฯลฯ"></textarea></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="formCancel">ยกเลิก</button>
+      <button class="btn btn-primary" id="formSave">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const HEADERS = ['วันที่ลง','ID','ยี่ห้อ','รุ่น','ความจุ','สี','แบตเตอรี่','การใช้งาน','IMEI/SN','ทุน','ราคาส่ง','ราคาขาย','วันที่ขาย','หมายเหตุ'];
+let state = { items: [], filter: 'stock', search: '', editingId: null };
+
+// URL ของ Google Apps Script Web App (ผูกกับ Google Sheet ฐานข้อมูลแล้ว)
+const API_URL = 'https://script.google.com/macros/s/AKfycbx9o8FEFASbIkymeCsQ4uqf_dc0inKKh0PoRjDrVUb0lp95mCWNvL6e6qcMU7x7NnSD/exec';
+
+const $ = (id) => document.getElementById(id);
+const apiUrl = () => API_URL;
+
+function toast(msg, isError){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=> t.classList.remove('show'), 2600);
+}
+
+function money(n){
+  n = Number(n) || 0;
+  return '฿' + n.toLocaleString('th-TH', {maximumFractionDigits:0});
+}
+
+/* ---------------- API ---------------- */
+async function apiGet(){
+  if(!apiUrl()) { renderNoConfig(); return; }
+  try{
+    const res = await fetch(apiUrl(), { method:'GET' });
+    const json = await res.json();
+    if(json.success){
+      state.items = json.data;
+      renderAll();
+    } else {
+      toast('โหลดข้อมูลไม่สำเร็จ: ' + (json.message||''), true);
+    }
+  }catch(err){
+    toast('เชื่อมต่อ Google Sheet ไม่สำเร็จ ตรวจสอบ URL ในหน้าตั้งค่า', true);
+    console.error(err);
+  }
+}
+
+async function apiPost(payload){
+  const res = await fetch(apiUrl(), {
+    method:'POST',
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // เลี่ยง CORS preflight ของ Apps Script
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+/* ---------------- Rendering ---------------- */
+function renderNoConfig(){
+  $('tableBody').innerHTML = `<tr class="loading-row"><td colspan="10">ยังไม่ได้ตั้งค่าการเชื่อมต่อ Google Sheet — กดปุ่ม ⚙️ ตั้งค่า ด้านบน</td></tr>`;
+  $('cardList').innerHTML = '';
+}
+
+function filteredItems(){
+  let items = [...state.items];
+  const q = state.search.trim().toLowerCase();
+  if(q){
+    items = items.filter(it =>
+      String(it['ยี่ห้อ']||'').toLowerCase().includes(q) ||
+      String(it['รุ่น']||'').toLowerCase().includes(q) ||
+      String(it['IMEI/SN']||'').toLowerCase().includes(q) ||
+      String(it['สี']||'').toLowerCase().includes(q)
+    );
+  }
+  if(state.filter === 'new') items = items.filter(it => it['การใช้งาน']==='มือ 1' && !it['วันที่ขาย']);
+  else if(state.filter === 'used') items = items.filter(it => it['การใช้งาน']==='มือ 2' && !it['วันที่ขาย']);
+  else if(state.filter === 'sold') items = items.filter(it => !!it['วันที่ขาย']);
+  else if(state.filter === 'stock') items = items.filter(it => !it['วันที่ขาย']);
+  // 'all' -> ไม่กรอง
+
+  items.sort((a,b)=> String(b['วันที่ลง']||'').localeCompare(String(a['วันที่ลง']||'')));
+  return items;
+}
+
+function renderAll(){
+  const items = state.items;
+  const stock = items.filter(it => !it['วันที่ขาย']);
+  const newStock = stock.filter(it => it['การใช้งาน']==='มือ 1');
+  const usedStock = stock.filter(it => it['การใช้งาน']==='มือ 2');
+  const soldCount = items.length - stock.length;
+  const capitalValue = stock.reduce((s,it)=> s + (Number(it['ทุน'])||0), 0);
+
+  $('statTotal').textContent = stock.length;
+  $('statNew').textContent = newStock.length;
+  $('statUsed').textContent = usedStock.length;
+  $('statValue').textContent = money(capitalValue);
+  $('statSoldSub').textContent = `ขายแล้ว ${soldCount} เครื่อง`;
+
+  renderList(filteredItems());
+}
+
+function statusChip(it){
+  const isUsed = it['การใช้งาน'] === 'มือ 2';
+  return `<span class="tag-chip ${isUsed?'tag-used':'tag-new'}">${isUsed?'มือ 2':'มือ 1'}</span>`;
+}
+
+function renderList(items){
+  const tbody = $('tableBody');
+  const cardList = $('cardList');
+
+  if(!apiUrl()){ renderNoConfig(); return; }
+
+  if(items.length === 0){
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="glyph">📦</div><h3>ไม่พบรายการ</h3><p>ลองเปลี่ยนตัวกรองหรือคำค้นหา หรือเพิ่มรายการใหม่</p></div></td></tr>`;
+    cardList.innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = items.map(it => {
+    const sold = !!it['วันที่ขาย'];
+    return `<tr class="${sold?'sold':''}">
+      <td>${statusChip(it)}${sold? ' <span class="badge badge-sold">ขายแล้ว</span>' : ' <span class="badge badge-stock">คงเหลือ</span>'}</td>
+      <td class="model-cell"><strong>${esc(it['ยี่ห้อ'])} ${esc(it['รุ่น'])}</strong><span class="id-tag">${esc(it['ID'])}</span></td>
+      <td>${esc(it['ความจุ'])||'-'} · ${esc(it['สี'])||'-'}</td>
+      <td class="mono">${esc(it['แบตเตอรี่'])||'-'}</td>
+      <td class="mono">${esc(it['IMEI/SN'])||'-'}</td>
+      <td class="price">${money(it['ทุน'])}</td>
+      <td class="price">${money(it['ราคาส่ง'])}</td>
+      <td class="price">${money(it['ราคาขาย'])}</td>
+      <td class="mono">${esc(it['วันที่ลง'])||'-'}</td>
+      <td><div class="row-actions">
+        <button class="icon-btn" onclick="openEdit('${it['ID']}')" title="แก้ไข">✎</button>
+        <button class="icon-btn" onclick="removeItem('${it['ID']}')" title="ลบ">🗑</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  cardList.innerHTML = items.map(it => {
+    const sold = !!it['วันที่ขาย'];
+    const isUsed = it['การใช้งาน'] === 'มือ 2';
+    return `<div class="stock-card ${isUsed?'used':''} ${sold?'sold':''}">
+      <div class="row1">
+        <div>
+          <h4>${esc(it['ยี่ห้อ'])} ${esc(it['รุ่น'])}</h4>
+          <div class="meta">${esc(it['ID'])} · ${esc(it['ความจุ'])||'-'} · ${esc(it['สี'])||'-'}</div>
+        </div>
+        ${statusChip(it)}
+      </div>
+      <div class="grid2">
+        <div><span>ทุน</span>${money(it['ทุน'])}</div>
+        <div><span>ราคาขาย</span>${money(it['ราคาขาย'])}</div>
+        <div><span>แบต</span>${esc(it['แบตเตอรี่'])||'-'}</div>
+        <div><span>สถานะ</span>${sold?'ขายแล้ว':'คงเหลือ'}</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline btn-sm" onclick="openEdit('${it['ID']}')" style="flex:1">แก้ไข</button>
+        <button class="btn btn-danger btn-sm" onclick="removeItem('${it['ID']}')" style="flex:1">ลบ</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(v){
+  if(v===undefined || v===null) return '';
+  return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------------- Form / Modal ---------------- */
+const formOverlay = $('formOverlay');
+function openAdd(){
+  state.editingId = null;
+  $('formTitle').textContent = 'ลงสต๊อกใหม่';
+  $('stockForm').reset();
+  $('f_date_in').value = new Date().toISOString().slice(0,10);
+  setUsage('มือ 1');
+  formOverlay.classList.add('open');
+}
+function openEdit(id){
+  const it = state.items.find(x => String(x['ID']) === String(id));
+  if(!it) return;
+  state.editingId = id;
+  $('formTitle').textContent = 'แก้ไขรายการ';
+  $('f_id').value = it['ID']||'';
+  $('f_date_in').value = it['วันที่ลง']||'';
+  $('f_brand').value = it['ยี่ห้อ']||'';
+  $('f_model').value = it['รุ่น']||'';
+  $('f_storage').value = it['ความจุ']||'';
+  $('f_color').value = it['สี']||'';
+  $('f_battery').value = it['แบตเตอรี่']||'';
+  $('f_imei').value = it['IMEI/SN']||'';
+  $('f_cost').value = it['ทุน']||'';
+  $('f_wholesale').value = it['ราคาส่ง']||'';
+  $('f_price').value = it['ราคาขาย']||'';
+  $('f_date_out').value = it['วันที่ขาย']||'';
+  $('f_note').value = it['หมายเหตุ']||'';
+  setUsage(it['การใช้งาน']||'มือ 1');
+  formOverlay.classList.add('open');
+}
+function closeForm(){ formOverlay.classList.remove('open'); }
+
+function setUsage(val){
+  $('f_usage').value = val;
+  $('optNew').classList.toggle('sel-new', val==='มือ 1');
+  $('optUsed').classList.toggle('sel-used', val==='มือ 2');
+}
+$('optNew').onclick = () => setUsage('มือ 1');
+$('optUsed').onclick = () => setUsage('มือ 2');
+
+$('btnAdd').onclick = openAdd;
+$('formClose').onclick = closeForm;
+$('formCancel').onclick = closeForm;
+formOverlay.addEventListener('click', e => { if(e.target===formOverlay) closeForm(); });
+
+$('formSave').onclick = async () => {
+  const brand = $('f_brand').value.trim();
+  const model = $('f_model').value.trim();
+  if(!brand || !model){ toast('กรุณากรอกยี่ห้อและรุ่น', true); return; }
+
+  const data = {
+    'วันที่ลง': $('f_date_in').value,
+    'ID': $('f_id').value.trim(),
+    'ยี่ห้อ': brand,
+    'รุ่น': model,
+    'ความจุ': $('f_storage').value.trim(),
+    'สี': $('f_color').value.trim(),
+    'แบตเตอรี่': $('f_battery').value.trim(),
+    'การใช้งาน': $('f_usage').value,
+    'IMEI/SN': $('f_imei').value.trim(),
+    'ทุน': $('f_cost').value,
+    'ราคาส่ง': $('f_wholesale').value,
+    'ราคาขาย': $('f_price').value,
+    'วันที่ขาย': $('f_date_out').value,
+    'หมายเหตุ': $('f_note').value.trim()
+  };
+
+  $('formSave').disabled = true;
+  $('formSave').innerHTML = '<span class="spinner"></span>';
+  try{
+    const action = state.editingId ? 'update' : 'create';
+    if(state.editingId) data['ID'] = state.editingId;
+    const res = await apiPost({ action, data });
+    if(res.success){
+      toast(state.editingId ? 'แก้ไขรายการเรียบร้อย' : 'ลงสต๊อกเรียบร้อย');
+      closeForm();
+      await apiGet();
+    } else {
+      toast('บันทึกไม่สำเร็จ: ' + (res.message||''), true);
+    }
+  }catch(err){
+    toast('เกิดข้อผิดพลาดในการเชื่อมต่อ', true);
+  }finally{
+    $('formSave').disabled = false;
+    $('formSave').textContent = 'บันทึก';
+  }
+};
+
+async function removeItem(id){
+  if(!confirm('ยืนยันการลบรายการนี้? การลบไม่สามารถย้อนกลับได้')) return;
+  try{
+    const res = await apiPost({ action:'delete', id });
+    if(res.success){ toast('ลบรายการแล้ว'); await apiGet(); }
+    else toast('ลบไม่สำเร็จ: ' + (res.message||''), true);
+  }catch(err){ toast('เกิดข้อผิดพลาดในการเชื่อมต่อ', true); }
+}
+
+/* ---------------- Tabs / Search ---------------- */
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.onclick = () => {
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.filter = btn.dataset.filter;
+    renderList(filteredItems());
+  };
+});
+$('searchInput').oninput = (e) => { state.search = e.target.value; renderList(filteredItems()); };
+$('btnRefresh').onclick = () => { apiGet(); toast('รีเฟรชข้อมูลแล้ว'); };
+
+/* ---------------- Init ---------------- */
+apiGet();
+</script>
+</body>
+</html>
