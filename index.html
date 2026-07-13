@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>สต๊อกมือถือ — ระบบจัดการสต๊อก</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- ใช้ฟอนต์ Cordia New (ฟอนต์ระบบ) เป็นฟอนต์หลักของเว็บ ไม่ต้องโหลดจากภายนอก -->
 <style>
   :root{
     --bg:#F5F6F1;
@@ -34,12 +32,12 @@
   body{
     background:var(--bg);
     color:var(--ink);
-    font-family:'Noto Sans Thai','IBM Plex Mono',sans-serif;
+    font-family:'Cordia New','Angsana New','TH Sarabun New',sans-serif;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
   }
-  .mono{font-family:'IBM Plex Mono','Noto Sans Thai',monospace;}
-  .serif{font-family:'Noto Serif Thai',serif;}
+  .mono{font-family:'Cordia New','Angsana New',monospace;}
+  .serif{font-family:'Cordia New',serif;}
 
   /* ---------- Header ---------- */
   header.topbar{
@@ -58,11 +56,11 @@
     width:38px;height:38px;border-radius:9px;
     background:linear-gradient(155deg,#2E7D5B,#1E5C4E 60%,#123F38);
     display:flex;align-items:center;justify-content:center;
-    font-family:'Noto Serif Thai',serif; font-weight:700; color:#fff; font-size:17px;
+    font-family:'Cordia New',serif; font-weight:700; color:#fff; font-size:17px;
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);
   }
   .brand-title h1{
-    font-family:'Noto Serif Thai',serif; font-weight:600; font-size:20px; margin:0; letter-spacing:.2px;
+    font-family:'Cordia New',serif; font-weight:600; font-size:20px; margin:0; letter-spacing:.2px;
   }
   .brand-title p{margin:1px 0 0; font-size:12.5px; color:#B9CBC2;}
   .topbar-actions{display:flex; gap:8px;}
@@ -96,7 +94,7 @@
     content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--tag,var(--brand-2));
   }
   .stat-card .label{font-size:12px; color:var(--ink-soft); font-weight:600; letter-spacing:.2px;}
-  .stat-card .value{font-family:'Noto Serif Thai',serif; font-size:26px; font-weight:600; margin-top:4px;}
+  .stat-card .value{font-family:'Cordia New',serif; font-size:26px; font-weight:600; margin-top:4px;}
   .stat-card .sub{font-size:11.5px; color:var(--ink-faint); margin-top:2px;}
 
   .toolbar{
@@ -131,7 +129,7 @@
 
   .tag-chip{
     position:relative; display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 8px;
-    border-radius:0 8px 8px 0; font-size:12px; font-weight:700; font-family:'IBM Plex Mono',monospace;
+    border-radius:0 8px 8px 0; font-size:12px; font-weight:700; font-family:'Cordia New',monospace;
   }
   .tag-chip::before{
     content:""; width:7px; height:7px; border-radius:50%; background:currentColor; box-shadow:0 0 0 2px var(--surface);
@@ -144,12 +142,12 @@
   .badge-sold{background:var(--sold-bg); color:var(--sold);}
 
   .id-tag{
-    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft);
+    font-family:'Cordia New',monospace; font-size:12px; color:var(--ink-soft);
     background:#F1F2EB; border:1px dashed var(--border); border-radius:6px; padding:2px 7px;
   }
   .model-cell strong{display:block; font-size:13.5px;}
   .model-cell span{display:block; font-size:11.5px; color:var(--ink-faint); margin-top:1px;}
-  .price{font-family:'IBM Plex Mono',monospace; font-weight:600;}
+  .price{font-family:'Cordia New',monospace; font-weight:600;}
   .row-actions{display:flex; gap:6px; justify-content:flex-end;}
   .icon-btn{
     width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:var(--surface);
@@ -159,7 +157,7 @@
 
   .empty-state{padding:64px 24px; text-align:center; color:var(--ink-soft);}
   .empty-state .glyph{font-size:34px; margin-bottom:10px;}
-  .empty-state h3{font-family:'Noto Serif Thai',serif; margin:0 0 6px; color:var(--ink);}
+  .empty-state h3{font-family:'Cordia New',serif; margin:0 0 6px; color:var(--ink);}
   .empty-state p{margin:0 0 16px; font-size:13.5px;}
 
   /* ---------- Mobile cards ---------- */
@@ -171,7 +169,7 @@
   .stock-card.used{border-left-color:var(--used);}
   .stock-card.sold{opacity:.65;}
   .stock-card .row1{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
-  .stock-card h4{margin:0; font-size:15px; font-family:'Noto Serif Thai',serif;}
+  .stock-card h4{margin:0; font-size:15px; font-family:'Cordia New',serif;}
   .stock-card .meta{font-size:12px; color:var(--ink-soft); margin-top:3px;}
   .stock-card .grid2{display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:10px; font-size:12.5px;}
   .stock-card .grid2 div span{display:block; color:var(--ink-faint); font-size:10.5px;}
@@ -201,7 +199,7 @@
     padding:18px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;
     position:sticky; top:0; background:var(--surface); z-index:2;
   }
-  .modal-header h2{font-family:'Noto Serif Thai',serif; font-size:18px; margin:0;}
+  .modal-header h2{font-family:'Cordia New',serif; font-size:18px; margin:0;}
   .modal-close{background:none;border:none;font-size:20px;color:var(--ink-soft); line-height:1; padding:4px;}
   .modal-body{padding:20px 22px;}
   .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
@@ -253,7 +251,6 @@
       </div>
     </div>
     <div class="topbar-actions">
-      <button class="btn btn-ghost" id="btnSettings">⚙️ ตั้งค่า</button>
       <button class="btn btn-ghost" id="btnRefresh">⟳ รีเฟรช</button>
       <button class="btn btn-primary" id="btnAdd">+ ลงสต๊อกใหม่</button>
     </div>
@@ -365,36 +362,17 @@
   </div>
 </div>
 
-<!-- Settings Modal -->
-<div class="overlay" id="settingsOverlay">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-header">
-      <h2>ตั้งค่าการเชื่อมต่อ</h2>
-      <button class="modal-close" id="settingsClose">✕</button>
-    </div>
-    <div class="modal-body settings-body">
-      <p>วาง <strong>Web app URL</strong> ที่ได้จากการ Deploy Google Apps Script (ดูขั้นตอนใน README.md) เพื่อเชื่อมหน้านี้เข้ากับ Google Sheet ของคุณ</p>
-      <div class="field">
-        <label>Apps Script Web App URL</label>
-        <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/XXXX/exec">
-      </div>
-      <p>ข้อมูลนี้จะถูกเก็บไว้ในเบราว์เซอร์ของคุณเท่านั้น (<code>localStorage</code>) จะไม่ถูกอัปโหลดไปที่ใด</p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" id="settingsCancel">ยกเลิก</button>
-      <button class="btn btn-primary" id="settingsSave">บันทึกการตั้งค่า</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
 const HEADERS = ['วันที่ลง','ID','ยี่ห้อ','รุ่น','ความจุ','สี','แบตเตอรี่','การใช้งาน','IMEI/SN','ทุน','ราคาส่ง','ราคาขาย','วันที่ขาย','หมายเหตุ'];
 let state = { items: [], filter: 'stock', search: '', editingId: null };
 
+// URL ของ Google Apps Script Web App (ผูกกับ Google Sheet ฐานข้อมูลแล้ว)
+const API_URL = 'https://script.google.com/macros/s/AKfycbx9o8FEFASbIkymeCsQ4uqf_dc0inKKh0PoRjDrVUb0lp95mCWNvL6e6qcMU7x7NnSD/exec';
+
 const $ = (id) => document.getElementById(id);
-const apiUrl = () => localStorage.getItem('stockApiUrl') || '';
+const apiUrl = () => API_URL;
 
 function toast(msg, isError){
   const t = $('toast');
@@ -594,7 +572,6 @@ $('formCancel').onclick = closeForm;
 formOverlay.addEventListener('click', e => { if(e.target===formOverlay) closeForm(); });
 
 $('formSave').onclick = async () => {
-  if(!apiUrl()){ toast('กรุณาตั้งค่า Google Sheet ก่อน', true); openSettings(); return; }
   const brand = $('f_brand').value.trim();
   const model = $('f_model').value.trim();
   if(!brand || !model){ toast('กรุณากรอกยี่ห้อและรุ่น', true); return; }
@@ -658,30 +635,7 @@ document.querySelectorAll('.tab').forEach(btn=>{
 $('searchInput').oninput = (e) => { state.search = e.target.value; renderList(filteredItems()); };
 $('btnRefresh').onclick = () => { apiGet(); toast('รีเฟรชข้อมูลแล้ว'); };
 
-/* ---------------- Settings ---------------- */
-const settingsOverlay = $('settingsOverlay');
-function openSettings(){
-  $('apiUrlInput').value = apiUrl();
-  settingsOverlay.classList.add('open');
-}
-function closeSettings(){ settingsOverlay.classList.remove('open'); }
-$('btnSettings').onclick = openSettings;
-$('settingsClose').onclick = closeSettings;
-$('settingsCancel').onclick = closeSettings;
-settingsOverlay.addEventListener('click', e => { if(e.target===settingsOverlay) closeSettings(); });
-$('settingsSave').onclick = () => {
-  const url = $('apiUrlInput').value.trim();
-  if(url && !url.startsWith('https://script.google.com')){
-    if(!confirm('URL นี้ไม่ใช่ Apps Script URL ทั่วไป ต้องการบันทึกต่อหรือไม่?')) return;
-  }
-  localStorage.setItem('stockApiUrl', url);
-  closeSettings();
-  toast('บันทึกการตั้งค่าแล้ว');
-  apiGet();
-};
-
 /* ---------------- Init ---------------- */
-if(!apiUrl()) { setTimeout(openSettings, 400); }
 apiGet();
 </script>
 </body>
